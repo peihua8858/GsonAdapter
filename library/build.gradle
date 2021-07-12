@@ -27,5 +27,5 @@ dependencies {
 //    implementation 'com.fz.commutil:commutil:1.0.2-SNAPSHOT'
 }
 apply plugin: 'com.github.dcendents.android-maven'
-group='com.github.peihua8858'
+group='com.github.GsonAdapter'
 //apply from: "push_maven.gradle"
