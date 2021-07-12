@@ -1,12 +1,10 @@
 apply plugin: 'com.android.library'
-
 android {
-    compileSdkVersion 29
-    buildToolsVersion "29.0.3"
+    compileSdkVersion 30
 
     defaultConfig {
         minSdkVersion 18
-        targetSdkVersion 29
+        targetSdkVersion 30
         versionCode 1
         versionName "1.0"
 
@@ -26,6 +24,8 @@ dependencies {
     implementation fileTree(dir: "libs", include: ["*.jar"])
 //    compileOnly 'androidx.appcompat:appcompat:1.1.0'
     implementation "com.google.code.gson:gson:2.8.6"
-    implementation 'com.fz.commutil:commutil:1.0.2-SNAPSHOT'
+//    implementation 'com.fz.commutil:commutil:1.0.2-SNAPSHOT'
 }
-apply from: "push_maven.gradle"
+apply plugin: 'com.github.dcendents.android-maven'
+group='com.github.peihua8858'
+//apply from: "push_maven.gradle"
