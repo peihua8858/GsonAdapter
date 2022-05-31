@@ -21,7 +21,7 @@ import java.util.Map;
  * 为了gson 能够正常解析出服务器返回数据 做容错处理。
  */
 public class GsonFactory {
-
+    static final boolean DEFAULT_USE_JDK_UNSAFE = true;
     /**
      * 基本类型转换
      */
@@ -51,17 +51,17 @@ public class GsonFactory {
         //注入 type adapter
         // 集合
         JsonAdapterAnnotationTypeAdapterFactory jsonAdapterFactory = new JsonAdapterAnnotationTypeAdapterFactory(
-                new ConstructorConstructor(Collections.<Type, InstanceCreator<?>>emptyMap()));
+                new ConstructorConstructor(Collections.<Type, InstanceCreator<?>>emptyMap(),DEFAULT_USE_JDK_UNSAFE));
 
         ReflectiveTypeAdapterFactory rta = new ReflectiveTypeAdapterFactory(
-                new ConstructorConstructor(Collections.<Type, InstanceCreator<?>>emptyMap()),
+                new ConstructorConstructor(Collections.<Type, InstanceCreator<?>>emptyMap(),DEFAULT_USE_JDK_UNSAFE),
                 FieldNamingPolicy.IDENTITY,
                 Excluder.DEFAULT,
                 jsonAdapterFactory);
         //Object
         gsonBuilder.registerTypeAdapterFactory(rta);
-        gsonBuilder.registerTypeAdapterFactory(new CollectionTypeAdapterFactory(new ConstructorConstructor(Collections.<Type, InstanceCreator<?>>emptyMap())));
-        gsonBuilder.registerTypeAdapterFactory(new MapTypeAdapterFactory(new ConstructorConstructor(Collections.<Type, InstanceCreator<?>>emptyMap()), false));
+        gsonBuilder.registerTypeAdapterFactory(new CollectionTypeAdapterFactory(new ConstructorConstructor(Collections.<Type, InstanceCreator<?>>emptyMap(),DEFAULT_USE_JDK_UNSAFE)));
+        gsonBuilder.registerTypeAdapterFactory(new MapTypeAdapterFactory(new ConstructorConstructor(Collections.<Type, InstanceCreator<?>>emptyMap(),DEFAULT_USE_JDK_UNSAFE), false));
 
         //注入 8大基本类型 type adapter
         gsonBuilder.registerTypeAdapter(Double.class, DOUBLE);
