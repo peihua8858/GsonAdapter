@@ -51,17 +51,17 @@ public class GsonFactory {
         //注入 type adapter
         // 集合
         JsonAdapterAnnotationTypeAdapterFactory jsonAdapterFactory = new JsonAdapterAnnotationTypeAdapterFactory(
-                new ConstructorConstructor(Collections.<Type, InstanceCreator<?>>emptyMap(),DEFAULT_USE_JDK_UNSAFE));
+                new ConstructorConstructor(Collections.emptyMap(), DEFAULT_USE_JDK_UNSAFE, Collections.emptyList()));
 
         ReflectiveTypeAdapterFactory rta = new ReflectiveTypeAdapterFactory(
-                new ConstructorConstructor(Collections.<Type, InstanceCreator<?>>emptyMap(),DEFAULT_USE_JDK_UNSAFE),
+                new ConstructorConstructor(Collections.emptyMap(), DEFAULT_USE_JDK_UNSAFE, Collections.emptyList()),
                 FieldNamingPolicy.IDENTITY,
                 Excluder.DEFAULT,
                 jsonAdapterFactory);
         //Object
         gsonBuilder.registerTypeAdapterFactory(rta);
-        gsonBuilder.registerTypeAdapterFactory(new CollectionTypeAdapterFactory(new ConstructorConstructor(Collections.<Type, InstanceCreator<?>>emptyMap(),DEFAULT_USE_JDK_UNSAFE)));
-        gsonBuilder.registerTypeAdapterFactory(new MapTypeAdapterFactory(new ConstructorConstructor(Collections.<Type, InstanceCreator<?>>emptyMap(),DEFAULT_USE_JDK_UNSAFE), false));
+        gsonBuilder.registerTypeAdapterFactory(new CollectionTypeAdapterFactory(new ConstructorConstructor(Collections.emptyMap(), DEFAULT_USE_JDK_UNSAFE, Collections.emptyList())));
+        gsonBuilder.registerTypeAdapterFactory(new MapTypeAdapterFactory(new ConstructorConstructor(Collections.emptyMap(), DEFAULT_USE_JDK_UNSAFE, Collections.emptyList()), false));
 
         //注入 8大基本类型 type adapter
         gsonBuilder.registerTypeAdapter(Double.class, DOUBLE);

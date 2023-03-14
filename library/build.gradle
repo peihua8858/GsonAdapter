@@ -1,10 +1,10 @@
 apply plugin: 'com.android.library'
 android {
-    compileSdkVersion 30
+    compileSdkVersion 31
 
     defaultConfig {
         minSdkVersion 18
-        targetSdkVersion 30
+        targetSdkVersion 31
         versionCode 1
         versionName "1.0"
 
@@ -23,7 +23,7 @@ android {
 dependencies {
     implementation fileTree(dir: "libs", include: ["*.jar"])
 //    compileOnly 'androidx.appcompat:appcompat:1.1.0'
-    implementation "com.google.code.gson:gson:2.9.0"
+    implementation "com.google.code.gson:gson:2.10.1"
 //    implementation 'com.fz.commutil:commutil:1.0.2-SNAPSHOT'
 }
 apply plugin: 'com.github.dcendents.android-maven'
