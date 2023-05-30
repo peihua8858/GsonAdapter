@@ -7,9 +7,12 @@ import com.google.gson.InstanceCreator;
 import com.google.gson.JsonDeserializer;
 import com.google.gson.JsonSerializer;
 import com.google.gson.TypeAdapter;
+import com.google.gson.TypeAdapterFactory;
 import com.google.gson.internal.ConstructorConstructor;
 import com.google.gson.internal.Excluder;
 import com.google.gson.internal.bind.MapTypeAdapterFactory;
+import com.google.gson.internal.bind.TreeTypeAdapter;
+import com.google.gson.reflect.TypeToken;
 
 import java.lang.reflect.Type;
 import java.util.Collections;
@@ -75,7 +78,7 @@ public class GsonFactory {
         gsonBuilder.registerTypeAdapter(boolean.class, BOOLEAN);
         gsonBuilder.registerTypeAdapter(long.class, LONG);
         gsonBuilder.registerTypeAdapter(String.class, STRING);
-
+        gsonBuilder.serializeNulls();
         return gsonBuilder;
     }
 
@@ -107,4 +110,5 @@ public class GsonFactory {
         builder.setLenient();
         return builder.create();
     }
+
 }

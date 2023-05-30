@@ -89,7 +89,9 @@ public final class CollectionTypeAdapterFactory implements TypeAdapterFactory {
                 in.beginArray();
                 while (in.hasNext()) {
                     E instance = elementTypeAdapter.read(in);
-                    collection.add(instance);
+                    if (instance!=null) {
+                        collection.add(instance);
+                    }
                 }
                 in.endArray();
             } catch (Exception e) {

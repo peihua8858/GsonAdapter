@@ -28,7 +28,7 @@ public class StringTypeAdapter implements JsonSerializer<String>, JsonDeserializ
 
     @Override
     public String deserialize(JsonElement json, Type typeOfT, JsonDeserializationContext context) throws JsonParseException {
-        if (json == null) {
+        if (json == null || json.isJsonNull()) {
             return "";
         } else {
             try {//直接解析

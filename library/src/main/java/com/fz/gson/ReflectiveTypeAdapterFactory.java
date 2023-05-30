@@ -100,7 +100,8 @@ public final class ReflectiveTypeAdapterFactory implements TypeAdapterFactory {
     private BoundField createBoundField(
             final Gson context, final Field field, final String name,
             final TypeToken<?> fieldType, boolean serialize, boolean deserialize) {
-        final boolean isPrimitive = Primitives.isPrimitive(fieldType.getRawType());
+        Type rawType = fieldType.getRawType();
+        final boolean isPrimitive = Primitives.isPrimitive(rawType);
         // special casing primitives here saves ~5% on Android...
         JsonAdapter annotation = field.getAnnotation(JsonAdapter.class);
         TypeAdapter<?> mapped = null;
@@ -133,8 +134,22 @@ public final class ReflectiveTypeAdapterFactory implements TypeAdapterFactory {
                 } catch (Exception e) {
                     e.printStackTrace();
                 }
-                if (fieldValue != null || !isPrimitive) {
+                if (fieldValue != null && !isPrimitive) {
                     field.set(value, fieldValue);
+                } else if (rawType == String.class) {
+                    field.set(value, "");
+                } else if (rawType == Integer.class) {
+                    field.set(value, 0);
+                } else if (rawType == Float.class) {
+                    field.set(value, 0f);
+                } else if (rawType == Long.class) {
+                    field.set(value, 0L);
+                } else if (rawType == Short.class) {
+                    field.set(value, 0);
+                } else if (rawType == Boolean.class) {
+                    field.set(value, false);
+                } else if (rawType == Double.class) {
+                    field.set(value, 0.0);
                 }
             }
 
