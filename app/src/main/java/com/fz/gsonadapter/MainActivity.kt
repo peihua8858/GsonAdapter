@@ -15,7 +15,6 @@ class MainActivity : AppCompatActivity() {
         setContentView(R.layout.activity_main)
     }
 
-
     fun onClick(view: View) {
         val type = object : TypeToken<Response>() {}.type
         try {
@@ -30,6 +29,7 @@ class MainActivity : AppCompatActivity() {
                     "\t\t\"a\":null,\n" +
                     "\t\t\"b\":\"5566\"\n" +
                     "\t},\n" +
+                    "\t\"status\":200,\n" +
                     "\t\"C\":null,\n" +
                     "\t\"D\":null,\n" +
                     "\t\"E\":null,\n" +
@@ -54,6 +54,7 @@ class MainActivity : AppCompatActivity() {
         val F:Long,
         val G:Short,
         val H:Boolean,
+        val status:Int
     )
 
     data class Content(

@@ -60,7 +60,7 @@ public final class CollectionTypeAdapterFactory implements TypeAdapterFactory {
         ObjectConstructor<T> constructor = constructorConstructor.get(typeToken);
 
         @SuppressWarnings({"unchecked", "rawtypes"}) // create() doesn't define a type parameter
-                TypeAdapter<T> result = new Adapter(gson, elementType, elementTypeAdapter, constructor);
+        TypeAdapter<T> result = new Adapter(gson, elementType, elementTypeAdapter, constructor);
         return result;
     }
 
@@ -89,7 +89,7 @@ public final class CollectionTypeAdapterFactory implements TypeAdapterFactory {
                 in.beginArray();
                 while (in.hasNext()) {
                     E instance = elementTypeAdapter.read(in);
-                    if (instance!=null) {
+                    if (instance != null) {
                         collection.add(instance);
                     }
                 }
