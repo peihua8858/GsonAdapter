@@ -28,32 +28,25 @@ public class StringTypeAdapter implements JsonSerializer<String>, JsonDeserializ
 
     @Override
     public String deserialize(JsonElement json, Type typeOfT, JsonDeserializationContext context) throws JsonParseException {
-        try {
-            return toString(json);
-        } catch (Exception e) {
-            e.printStackTrace();
+        if (json == null) {
             return "";
-        }
-    }
-
-    /**
-     * 将Object对象转成Integer类型
-     *
-     * @param value
-     * @return 如果value不能转成Integer，则默认defaultValue
-     */
-    private String toString(Object value) {
-        if (value instanceof String) {
-            String result = (String) value;
-            if ("null".equalsIgnoreCase(result)) {
+        } else {
+            try {//直接解析
+                if (json.isJsonArray()) {
+                    return json.getAsJsonArray().toString();
+                }
+                if (json.isJsonObject()) {
+                    return json.getAsJsonObject().toString();
+                }
+                String result = json.getAsString();
+                if ("null".equalsIgnoreCase(result)) {
+                    return "";
+                }
+                return json.getAsString();
+            } catch (Exception e) {
+                e.printStackTrace();
                 return "";
             }
-            return result;
-        } else {
-            if (value != null) {
-                return value.toString();
-            }
         }
-        return "";
     }
 }
