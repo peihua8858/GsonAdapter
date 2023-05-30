@@ -12,6 +12,7 @@ import java.lang.reflect.Type;
 
 /**
  * 字符串类型适配
+ * 解析返回非空字符串，如果是空，则返回空字符串
  *
  * @author dingpeihua
  * @version 1.0
@@ -27,25 +28,32 @@ public class StringTypeAdapter implements JsonSerializer<String>, JsonDeserializ
 
     @Override
     public String deserialize(JsonElement json, Type typeOfT, JsonDeserializationContext context) throws JsonParseException {
-        if (json == null) {
-            return null;
+        try {
+            return toString(json);
+        } catch (Exception e) {
+            e.printStackTrace();
+            return "";
+        }
+    }
+
+    /**
+     * 将Object对象转成Integer类型
+     *
+     * @param value
+     * @return 如果value不能转成Integer，则默认defaultValue
+     */
+    private String toString(Object value) {
+        if (value instanceof String) {
+            String result = (String) value;
+            if ("null".equalsIgnoreCase(result)) {
+                return "";
+            }
+            return result;
         } else {
-            try {//直接解析
-                if (json.isJsonArray()) {
-                    return json.getAsJsonArray().toString();
-                }
-                if (json.isJsonObject()) {
-                    return json.getAsJsonObject().toString();
-                }
-               /* String result = json.getAsString();
-                if ("null".equalsIgnoreCase(result)){
-                    return  null;
-                }*/
-                return json.getAsString();
-            } catch (Exception e) {
-                e.printStackTrace();
-                return null;
+            if (value != null) {
+                return value.toString();
             }
         }
+        return "";
     }
 }
