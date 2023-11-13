@@ -20,20 +20,19 @@ Gson 数据类型匹配异常处理
 * 把 `maven { url 'https://jitpack.io' }` 加入到 repositories 中
 * 添加如下依赖，末尾的「latestVersion」指的是徽章[![Download](https://jitpack.io/v/peihua8858/GsonAdapter.svg)](https://jitpack.io/#peihua8858/GsonAdapter)里的版本名称，请自行替换。
 ```py
- allprojects {
- 		repositories {
- 			...
- 			maven { url 'https://jitpack.io' }
- 		}
- 	}
+repositories {
+    ...
+    maven { url 'https://jitpack.io' }
+}
+
 ```
 
 * 添加依赖
 
 ```py
 dependencies {
-	        implementation 'com.github.peihua8858:GsonAdapter:latestVersion'
-	}
+     implementation 'com.github.peihua8858:GsonAdapter:latestVersion'
+}
 ```
 ## 进阶使用
 ```kotlin
