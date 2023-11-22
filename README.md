@@ -31,7 +31,7 @@ repositories {
 
 ```py
 dependencies {
-     implementation 'com.github.peihua8858:GsonAdapter:latestVersion'
+     implementation 'com.github.peihua8858:GsonAdapter:${latestVersion}'
 }
 ```
 ## 进阶使用
