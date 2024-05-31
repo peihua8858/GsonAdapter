@@ -1,6 +1,7 @@
 package com.fz.gson;
 
 import com.google.gson.FieldNamingPolicy;
+import com.google.gson.FieldNamingStrategy;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.InstanceCreator;
@@ -20,95 +21,118 @@ import java.util.Iterator;
 import java.util.Map;
 
 /**
- * add by tanping
  * 为了gson 能够正常解析出服务器返回数据 做容错处理。
  */
 public class GsonFactory {
-    static final boolean DEFAULT_USE_JDK_UNSAFE = true;
-    /**
-     * 基本类型转换
-     */
-    public static final BooleanTypeAdapter BOOLEAN = new BooleanTypeAdapter();
-    public static final DoubleTypeAdapter DOUBLE = new DoubleTypeAdapter();
-    public static final FloatTypeAdapter FLOAT = new FloatTypeAdapter();
-    public static final IntegerTypeAdapter INTEGER = new IntegerTypeAdapter();
-    public static final LongTypeAdapter LONG = new LongTypeAdapter();
-    public static final StringTypeAdapter STRING = new StringTypeAdapter();
 
-    public static GsonBuilder defaultBuilder() {
-        GsonBuilder gsonBuilder = new GsonBuilder();
-        gsonBuilder.setLenient();
-        return gsonBuilder;
-    }
+    public static class Factory {
+        private final GsonBuilder mBuilder = new GsonBuilder();
+        static final boolean DEFAULT_USE_JDK_UNSAFE = true;
+        /**
+         * 基本类型转换
+         */
+        public static final BooleanTypeAdapter BOOLEAN = new BooleanTypeAdapter();
+        public static final DoubleTypeAdapter DOUBLE = new DoubleTypeAdapter();
+        public static final FloatTypeAdapter FLOAT = new FloatTypeAdapter();
+        public static final IntegerTypeAdapter INTEGER = new IntegerTypeAdapter();
+        public static final LongTypeAdapter LONG = new LongTypeAdapter();
+        public static final StringTypeAdapter STRING = new StringTypeAdapter();
 
-    public static Gson createDefaultGson() {
-        return defaultBuilder().create();
-    }
-
-    public static Gson create() {
-        return createDefaultBuild().create();
-    }
-
-    public static GsonBuilder createDefaultBuild() {
-        GsonBuilder gsonBuilder = new GsonBuilder();
-        //注入 type adapter
-        // 集合
-        JsonAdapterAnnotationTypeAdapterFactory jsonAdapterFactory = new JsonAdapterAnnotationTypeAdapterFactory(
-                new ConstructorConstructor(Collections.emptyMap(), DEFAULT_USE_JDK_UNSAFE, Collections.emptyList()));
-
-        ReflectiveTypeAdapterFactory rta = new ReflectiveTypeAdapterFactory(
-                new ConstructorConstructor(Collections.emptyMap(), DEFAULT_USE_JDK_UNSAFE, Collections.emptyList()),
-                FieldNamingPolicy.IDENTITY,
-                Excluder.DEFAULT,
-                jsonAdapterFactory);
-        //Object
-        gsonBuilder.registerTypeAdapterFactory(rta);
-        gsonBuilder.registerTypeAdapterFactory(new CollectionTypeAdapterFactory(new ConstructorConstructor(Collections.emptyMap(), DEFAULT_USE_JDK_UNSAFE, Collections.emptyList())));
-        gsonBuilder.registerTypeAdapterFactory(new MapTypeAdapterFactory(new ConstructorConstructor(Collections.emptyMap(), DEFAULT_USE_JDK_UNSAFE, Collections.emptyList()), false));
-
-        //注入 8大基本类型 type adapter
-        gsonBuilder.registerTypeAdapter(Double.class, DOUBLE);
-        gsonBuilder.registerTypeAdapter(Boolean.class, BOOLEAN);
-        gsonBuilder.registerTypeAdapter(Float.class, FLOAT);
-        gsonBuilder.registerTypeAdapter(Integer.class, INTEGER);
-        gsonBuilder.registerTypeAdapter(Long.class, LONG);
-        gsonBuilder.registerTypeAdapter(int.class, INTEGER);
-        gsonBuilder.registerTypeAdapter(float.class, FLOAT);
-        gsonBuilder.registerTypeAdapter(double.class, DOUBLE);
-        gsonBuilder.registerTypeAdapter(boolean.class, BOOLEAN);
-        gsonBuilder.registerTypeAdapter(long.class, LONG);
-        gsonBuilder.registerTypeAdapter(String.class, STRING);
-        gsonBuilder.serializeNulls();
-        return gsonBuilder;
-    }
-
-    public static Gson createBuild(Type type, Object typeAdapter) {
-        final GsonBuilder builder = createDefaultBuild();
-        addTypeAdapter(builder, type, typeAdapter);
-        builder.setLenient();
-        return builder.create();
-    }
-
-    private static void addTypeAdapter(GsonBuilder builder, Type type, Object typeAdapter) {
-        if (type != null && (typeAdapter instanceof JsonSerializer<?>
-                || typeAdapter instanceof JsonDeserializer<?>
-                || typeAdapter instanceof InstanceCreator<?>
-                || typeAdapter instanceof TypeAdapter<?>)) {
-            builder.registerTypeAdapter(type, typeAdapter);
+        public static ReflectiveTypeAdapterFactory getCollectionsFactory() {
+            final JsonAdapterAnnotationTypeAdapterFactory jsonAdapterFactory = new JsonAdapterAnnotationTypeAdapterFactory(
+                    new ConstructorConstructor(Collections.emptyMap(), DEFAULT_USE_JDK_UNSAFE, Collections.emptyList()));
+            return new ReflectiveTypeAdapterFactory(
+                    new ConstructorConstructor(Collections.emptyMap(), DEFAULT_USE_JDK_UNSAFE, Collections.emptyList()),
+                    FieldNamingPolicy.IDENTITY,
+                    Excluder.DEFAULT,
+                    jsonAdapterFactory);
         }
-    }
 
-    public static Gson createBuild(Map<Type, Object> typeAdapters) {
-        final GsonBuilder builder = createDefaultBuild();
-        if (typeAdapters != null && typeAdapters.size() > 0) {
-            Iterator<Map.Entry<Type, Object>> iterator = typeAdapters.entrySet().iterator();
-            while (iterator.hasNext()) {
-                Map.Entry<Type, Object> entry = iterator.next();
-                addTypeAdapter(builder, entry.getKey(), entry.getValue());
+        public static CollectionTypeAdapterFactory getMapFactory() {
+            return new CollectionTypeAdapterFactory(new ConstructorConstructor(Collections.emptyMap(), DEFAULT_USE_JDK_UNSAFE, Collections.emptyList()));
+        }
+
+        public static MapTypeAdapterFactory getMapFactory2() {
+            return new MapTypeAdapterFactory(new ConstructorConstructor(Collections.emptyMap(), DEFAULT_USE_JDK_UNSAFE, Collections.emptyList()), false);
+        }
+
+        public Factory(boolean isAllAdapter) {
+            if (isAllAdapter) {
+                addAllAdapters();
             }
         }
-        builder.setLenient();
-        return builder.create();
+
+        public Factory addAllAdapters() {
+            //注入 type adapter
+            // 集合
+            //Object
+            mBuilder.registerTypeAdapterFactory(getCollectionsFactory());
+            mBuilder.registerTypeAdapterFactory(getMapFactory());
+            mBuilder.registerTypeAdapterFactory(getMapFactory2());
+
+            //注入 8大基本类型 type adapter
+            mBuilder.registerTypeAdapter(Double.class, DOUBLE);
+            mBuilder.registerTypeAdapter(Boolean.class, BOOLEAN);
+            mBuilder.registerTypeAdapter(Float.class, FLOAT);
+            mBuilder.registerTypeAdapter(Integer.class, INTEGER);
+            mBuilder.registerTypeAdapter(Long.class, LONG);
+            mBuilder.registerTypeAdapter(int.class, INTEGER);
+            mBuilder.registerTypeAdapter(float.class, FLOAT);
+            mBuilder.registerTypeAdapter(double.class, DOUBLE);
+            mBuilder.registerTypeAdapter(boolean.class, BOOLEAN);
+            mBuilder.registerTypeAdapter(long.class, LONG);
+            mBuilder.registerTypeAdapter(String.class, STRING);
+            mBuilder.serializeNulls();
+            return this;
+        }
+
+        public Factory setLenient() {
+            mBuilder.setLenient();
+            return this;
+        }
+
+        public Factory setFieldNamingPolicy(FieldNamingPolicy fieldNamingPolicy) {
+            mBuilder.setFieldNamingPolicy(fieldNamingPolicy);
+            return this;
+        }
+
+        public Factory registerTypeAdapter(Type type, Object typeAdapter) {
+            mBuilder.registerTypeAdapter(type, typeAdapter);
+            return this;
+        }
+
+        public Factory setFieldNamingStrategy(FieldNamingStrategy fieldNamingStrategy) {
+            mBuilder.setFieldNamingStrategy(fieldNamingStrategy);
+            return this;
+        }
+
+        public Factory setTypeAdapterFactory(TypeAdapterFactory typeAdapterFactory) {
+            mBuilder.registerTypeAdapterFactory(typeAdapterFactory);
+            return this;
+        }
+
+        public Factory registerTypeAdapterFactory(TypeAdapterFactory factory) {
+            mBuilder.registerTypeAdapterFactory(factory);
+            return this;
+        }
+
+        public GsonBuilder getBuilder() {
+            return mBuilder;
+        }
+
+        public Gson build() {
+            return mBuilder.create();
+        }
     }
 
+    public static Factory createFactory() {
+        return new Factory(true);
+    }
+
+    public static Factory createFactory(boolean isAllAdapter) {
+        return new Factory(isAllAdapter);
+    }
+    public static Gson createGson() {
+        return createFactory().setLenient().build();
+    }
 }
