@@ -44,6 +44,16 @@ val result="[{'country_code':'US','country_name':'United States'}]"
                     object : TypeToken<MutableList<CountryBean>>() {}.type
                 )
 ```
+或
+```kotlin
+data class CountryBean(val country_code:String,val country_name:String)
+
+val result="[{'country_code':'US','country_name':'United States'}]"
+ val list = GsonUtils.fromJson<MutableList<CountryBean>>(
+                    result,
+                    object : TypeToken<MutableList<CountryBean>>() {}.type
+                )
+```
 ## License
 ```sh
 Copyright 2023 peihua
