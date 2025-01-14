@@ -76,6 +76,14 @@ public class GsonUtils {
         return gson.fromJson(reader, apiResponseType);
     }
 
+    public static String toJson(Object obj) {
+        return toJson(GsonFactory.createGson(), obj);
+    }
+
+    public static String toJson(Gson gson, Object obj) {
+        return gson.toJson(obj);
+    }
+
     /**
      * 根据指定对象获取其泛型的实际类型
      * 返回的类型为[java.io.Serializable]。
