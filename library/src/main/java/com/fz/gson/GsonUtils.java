@@ -4,6 +4,7 @@ import com.google.gson.Gson;
 import com.google.gson.internal.$Gson$Types;
 import com.google.gson.reflect.TypeToken;
 
+import java.io.Reader;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
 
@@ -46,6 +47,33 @@ public class GsonUtils {
         Type type = getSuperclassTypeParameter(obj);
         Type apiResponseType = TypeToken.getParameterized(rawType, type).getType();
         return gson.fromJson(json, apiResponseType);
+    }
+
+    public static <T> T fromJson(Reader reader, Type classOfT) {
+        return fromJson(GsonFactory.createGson(), reader, classOfT);
+    }
+
+    public static <T> T fromJson(Gson gson, Reader reader, Type classOfT) {
+        return gson.fromJson(reader, classOfT);
+    }
+
+    public static <T> T fromJson(Reader reader, Type rawType, Type... typeArguments) {
+        return fromJson(GsonFactory.createGson(), reader, rawType, typeArguments);
+    }
+
+    public static <T> T fromJson(Gson gson, Reader reader, Type rawType, Type... typeArguments) {
+        Type apiResponseType = TypeToken.getParameterized(rawType, typeArguments).getType();
+        return gson.fromJson(reader, apiResponseType);
+    }
+
+    public static <T> T fromJson(Reader reader, Object obj, Class<T> rawType) {
+        return fromJson(GsonFactory.createGson(), reader, obj, rawType);
+    }
+
+    public static <T> T fromJson(Gson gson, Reader reader, Object obj, Class<T> rawType) {
+        Type type = getSuperclassTypeParameter(obj);
+        Type apiResponseType = TypeToken.getParameterized(rawType, type).getType();
+        return gson.fromJson(reader, apiResponseType);
     }
 
     /**
