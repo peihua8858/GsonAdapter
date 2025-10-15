@@ -23,10 +23,10 @@ android {
 
 dependencies {
     implementation fileTree(dir: "libs", include: ["*.jar"])
-    implementation "com.google.code.gson:gson:2.10.1"
+    implementation "com.google.code.gson:gson:2.13.2"
 }
 group = 'com.github.peihua8858'
-version = '1.0.4'
+version = '1.0.5'
 afterEvaluate {
     publishing {
         publications {
@@ -35,7 +35,7 @@ afterEvaluate {
                 from components.release
                 groupId = 'com.github.peihua8858'
                 artifactId = 'GsonAdapter'
-                version = '1.0.4'
+                version = version
             }
         }
     }

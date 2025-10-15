@@ -1,7 +1,7 @@
 package com.fz.gson;
 
 import com.google.gson.Gson;
-import com.google.gson.internal.$Gson$Types;
+import com.google.gson.internal.GsonTypes;
 import com.google.gson.reflect.TypeToken;
 
 import java.io.Reader;
@@ -90,7 +90,7 @@ public class GsonUtils {
      *
      * @param obj
      * @return
-     * @see {@link $Gson$Types#canonicalize
+     * @see {@link GsonTypes#canonicalize
      */
     public static Type getSuperclassTypeParameter(Object obj) {
         return getSuperclassTypeParameter(obj.getClass());
@@ -102,7 +102,7 @@ public class GsonUtils {
      *
      * @param subclass
      * @return
-     * @see {@link $Gson$Types#canonicalize
+     * @see {@link GsonTypes#canonicalize
      */
     public static Type getSuperclassTypeParameter(Class<?> subclass) {
         Type superclass = subclass.getGenericSuperclass();
@@ -120,13 +120,13 @@ public class GsonUtils {
      * @param index
      * @param type
      * @return
-     * @see {@link $Gson$Types#canonicalize
+     * @see {@link GsonTypes#canonicalize
      */
     public static Type getParameterUpperBound(int index, ParameterizedType type) {
         Type[] types = type.getActualTypeArguments();
         if (index < 0 || index >= types.length) {
             throw new IllegalArgumentException("Index " + index + " not in range [0," + types.length + ") for " + type);
         }
-        return $Gson$Types.canonicalize(types[index]);
+        return GsonTypes.canonicalize(types[index]);
     }
 }
