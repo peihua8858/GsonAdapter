@@ -1,17 +1,40 @@
 package com.fz.gsonadapter
 
+import com.fz.gson.GsonFactory
+import org.junit.Assert.assertEquals
+import org.junit.Assert.assertFalse
+import org.junit.Assert.assertNotNull
+import org.junit.Assert.assertTrue
 import org.junit.Test
 
-import org.junit.Assert.*
-
-/**
- * Example local unit test, which will execute on the development machine (host).
- *
- * See [testing documentation](http://d.android.com/tools/testing).
- */
 class ExampleUnitTest {
     @Test
-    fun addition_isCorrect() {
-        assertEquals(4, 2 + 2)
+    fun listFieldFallsBackToEmptyListWhenJsonIsObject() {
+        val json = """
+            {
+              "buyer_protection_items": [null, "30 Jours de Garantie Retour", "Garantie de prix"],
+              "buyerTitle": null,
+              "buyerContent": {"a": null, "b": "5566"},
+              "status": 200,
+              "C": null,
+              "D": null,
+              "E": null,
+              "F": null,
+              "G": null,
+              "H": null,
+              "cc": {"a": "1", "b": "2"}
+            }
+        """.trimIndent()
+
+        val response = GsonFactory.createGson().fromJson(json, MainActivity.Response::class.java)
+
+        assertNotNull(response)
+        assertNotNull(response.cc)
+        assertTrue(response.cc!!.isEmpty())
+        assertEquals(200, response.status)
+        assertEquals("", response.buyerTitle)
+        assertEquals("", response.buyerContent.a)
+        assertEquals("5566", response.buyerContent.b)
+        assertFalse(response.H)
     }
 }

@@ -9,6 +9,8 @@ import com.google.gson.JsonSerializationContext;
 import com.google.gson.JsonSerializer;
 
 import java.lang.reflect.Type;
+import java.math.BigDecimal;
+import java.math.RoundingMode;
 
 /**
  * Long 类型适配,如果字符串是小数，则四舍五入
@@ -54,8 +56,10 @@ public class LongTypeAdapter implements JsonSerializer<Long>, JsonDeserializer<L
             return ((Number) value).longValue();
         } else if (value instanceof String) {
             try {
-                return Math.round(Double.parseDouble((String) value));
-            } catch (NumberFormatException ignored) {
+                return new BigDecimal((String) value)
+                        .setScale(0, RoundingMode.HALF_UP)
+                        .longValueExact();
+            } catch (Exception ignored) {
             }
         }
         return 0L;

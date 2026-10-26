@@ -9,6 +9,8 @@ import com.google.gson.JsonSerializationContext;
 import com.google.gson.JsonSerializer;
 
 import java.lang.reflect.Type;
+import java.math.BigDecimal;
+import java.math.RoundingMode;
 
 /**
  * Integer类型适配,如果字符串是小数，则四舍五入
@@ -55,7 +57,9 @@ public class IntegerTypeAdapter implements JsonSerializer<Integer>, JsonDeserial
             return ((Number) value).intValue();
         } else if (value instanceof String) {
             try {
-                return (int) Math.round(Double.parseDouble((String) value));
+                return new BigDecimal((String) value)
+                        .setScale(0, RoundingMode.HALF_UP)
+                        .intValueExact();
             } catch (Exception ignored) {
             }
         }

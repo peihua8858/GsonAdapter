@@ -9,12 +9,14 @@ import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
 
 public class GsonUtils {
+    private static final Gson DEFAULT_GSON = GsonFactory.createGson();
+
     private GsonUtils() {
         throw new AssertionError();
     }
 
     public static <T> T fromJson(String json, Class<T> classOfT) {
-        return fromJson(GsonFactory.createGson(), json, classOfT);
+        return fromJson(DEFAULT_GSON, json, classOfT);
     }
 
     public static <T> T fromJson(Gson gson, String json, Class<T> classOfT) {
@@ -23,7 +25,7 @@ public class GsonUtils {
 
 
     public static <T> T fromJson(String json, Type classOfT) {
-        return fromJson(GsonFactory.createGson(), json, classOfT);
+        return fromJson(DEFAULT_GSON, json, classOfT);
     }
 
     public static <T> T fromJson(Gson gson, String json, Type classOfT) {
@@ -31,7 +33,7 @@ public class GsonUtils {
     }
 
     public static <T> T fromJson(String json, Type rawType, Type... typeArguments) {
-        return fromJson(GsonFactory.createGson(), json, rawType, typeArguments);
+        return fromJson(DEFAULT_GSON, json, rawType, typeArguments);
     }
 
     public static <T> T fromJson(Gson gson, String json, Type rawType, Type... typeArguments) {
@@ -40,7 +42,7 @@ public class GsonUtils {
     }
 
     public static <T> T fromJson(String json, Object obj, Class<T> rawType) {
-        return fromJson(GsonFactory.createGson(), json, obj, rawType);
+        return fromJson(DEFAULT_GSON, json, obj, rawType);
     }
 
     public static <T> T fromJson(Gson gson, String json, Object obj, Class<T> rawType) {
@@ -50,7 +52,7 @@ public class GsonUtils {
     }
 
     public static <T> T fromJson(Reader reader, Type classOfT) {
-        return fromJson(GsonFactory.createGson(), reader, classOfT);
+        return fromJson(DEFAULT_GSON, reader, classOfT);
     }
 
     public static <T> T fromJson(Gson gson, Reader reader, Type classOfT) {
@@ -58,7 +60,7 @@ public class GsonUtils {
     }
 
     public static <T> T fromJson(Reader reader, Type rawType, Type... typeArguments) {
-        return fromJson(GsonFactory.createGson(), reader, rawType, typeArguments);
+        return fromJson(DEFAULT_GSON, reader, rawType, typeArguments);
     }
 
     public static <T> T fromJson(Gson gson, Reader reader, Type rawType, Type... typeArguments) {
@@ -67,7 +69,7 @@ public class GsonUtils {
     }
 
     public static <T> T fromJson(Reader reader, Object obj, Class<T> rawType) {
-        return fromJson(GsonFactory.createGson(), reader, obj, rawType);
+        return fromJson(DEFAULT_GSON, reader, obj, rawType);
     }
 
     public static <T> T fromJson(Gson gson, Reader reader, Object obj, Class<T> rawType) {
@@ -77,7 +79,7 @@ public class GsonUtils {
     }
 
     public static String toJson(Object obj) {
-        return toJson(GsonFactory.createGson(), obj);
+        return toJson(DEFAULT_GSON, obj);
     }
 
     public static String toJson(Gson gson, Object obj) {

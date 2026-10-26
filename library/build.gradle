@@ -23,7 +23,10 @@ android {
 
 dependencies {
     implementation fileTree(dir: "libs", include: ["*.jar"])
-    implementation "com.google.code.gson:gson:2.15.0"
+    implementation("com.google.code.gson:gson:2.15.0") {
+        exclude group: "com.google.errorprone", module: "error_prone_annotations"
+    }
+    testImplementation "junit:junit:4.13.2"
 }
 group = 'com.github.peihua8858'
 version = '1.0.5'

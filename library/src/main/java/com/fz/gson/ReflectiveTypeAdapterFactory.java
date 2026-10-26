@@ -5,6 +5,8 @@ package com.fz.gson;
 
 import com.google.gson.FieldNamingStrategy;
 import com.google.gson.Gson;
+import com.google.gson.JsonElement;
+import com.google.gson.JsonParser;
 import com.google.gson.TypeAdapter;
 import com.google.gson.TypeAdapterFactory;
 import com.google.gson.annotations.JsonAdapter;
@@ -13,7 +15,6 @@ import com.google.gson.internal.GsonTypes;
 import com.google.gson.internal.ConstructorConstructor;
 import com.google.gson.internal.Excluder;
 import com.google.gson.internal.ObjectConstructor;
-import com.google.gson.internal.Primitives;
 import com.google.gson.internal.reflect.ReflectionHelper;
 import com.google.gson.reflect.TypeToken;
 import com.google.gson.stream.JsonReader;
@@ -22,6 +23,7 @@ import com.google.gson.stream.JsonWriter;
 
 import java.io.IOException;
 import java.lang.reflect.Field;
+import java.lang.reflect.Modifier;
 import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -64,10 +66,10 @@ public final class ReflectiveTypeAdapterFactory implements TypeAdapterFactory {
     /**
      * first element holds the default name
      */
-    private List<String> getFieldNames(Field f) {
+    private List<String> getFieldNames(Field f, FieldNamingStrategy fieldNamingStrategy) {
         SerializedName annotation = f.getAnnotation(SerializedName.class);
         if (annotation == null) {
-            String name = fieldNamingPolicy.translateName(f);
+            String name = fieldNamingStrategy.translateName(f);
             return Collections.singletonList(name);
         }
 
@@ -89,20 +91,33 @@ public final class ReflectiveTypeAdapterFactory implements TypeAdapterFactory {
     public <T> TypeAdapter<T> create(Gson gson, final TypeToken<T> type) {
         Class<? super T> raw = type.getRawType();
 
-        if (!Object.class.isAssignableFrom(raw)) {
-            return null; // it's a primitive!
+        if (!Object.class.isAssignableFrom(raw) || shouldUseGsonAdapter(raw)) {
+            return null;
         }
 
         ObjectConstructor<T> constructor = constructorConstructor.get(type);
-        return new Adapter<T>(constructor, getBoundFields(gson, type, raw));
+        TypeAdapter<T> delegate = gson.getDelegateAdapter(this, type);
+        return new Adapter<T>(constructor, getBoundFields(gson, type, raw), delegate);
+    }
+
+    private static boolean shouldUseGsonAdapter(Class<?> raw) {
+        if (raw == Object.class || raw.isArray() || raw.isEnum() || raw.isInterface()
+                || Modifier.isAbstract(raw.getModifiers()) || raw.getClassLoader() == null) {
+            return true;
+        }
+        String name = raw.getName();
+        return name.startsWith("android.")
+                || name.startsWith("androidx.")
+                || name.startsWith("java.")
+                || name.startsWith("javax.")
+                || name.startsWith("kotlin.")
+                || name.startsWith("kotlinx.");
     }
 
     private BoundField createBoundField(
             final Gson context, final Field field, final String name,
             final TypeToken<?> fieldType, boolean serialize, boolean deserialize) {
-        Type rawType = fieldType.getRawType();
-        final boolean isPrimitive = Primitives.isPrimitive(rawType);
-        // special casing primitives here saves ~5% on Android...
+        Class<?> rawType = fieldType.getRawType();
         JsonAdapter annotation = field.getAnnotation(JsonAdapter.class);
         TypeAdapter<?> mapped = null;
         if (annotation != null) {
@@ -128,34 +143,34 @@ public final class ReflectiveTypeAdapterFactory implements TypeAdapterFactory {
             @Override
             void read(JsonReader reader, Object value)
                     throws IOException, IllegalAccessException {
+                JsonElement jsonElement = JsonParser.parseReader(reader);
                 Object fieldValue = null;
                 try {
-                    fieldValue = typeAdapter.read(reader);
-                } catch (Exception e) {
-                    e.printStackTrace();
+                    fieldValue = typeAdapter.fromJsonTree(jsonElement);
+                } catch (Exception ignored) {
                 }
-                if (fieldValue != null || !isPrimitive) {
-                    if (fieldValue == null && rawType == String.class) {
-                        field.set(value, "");
-                    } else {
-                        field.set(value, fieldValue);
-                    }
+                if (fieldValue != null) {
+                    field.set(value, fieldValue);
+                } else if (rawType == String.class) {
+                    field.set(value, "");
+                } else if (rawType == boolean.class || rawType == Boolean.class) {
+                    field.set(value, false);
+                } else if (rawType == byte.class || rawType == Byte.class) {
+                    field.set(value, (byte) 0);
+                } else if (rawType == short.class || rawType == Short.class) {
+                    field.set(value, (short) 0);
+                } else if (rawType == int.class || rawType == Integer.class) {
+                    field.set(value, 0);
+                } else if (rawType == long.class || rawType == Long.class) {
+                    field.set(value, 0L);
+                } else if (rawType == float.class || rawType == Float.class) {
+                    field.set(value, 0f);
+                } else if (rawType == double.class || rawType == Double.class) {
+                    field.set(value, 0d);
+                } else if (rawType == char.class || rawType == Character.class) {
+                    field.set(value, '\0');
                 } else {
-                    if (rawType == String.class) {
-                        field.set(value, "");
-                    } else if (rawType == Integer.class) {
-                        field.set(value, 0);
-                    } else if (rawType == Float.class) {
-                        field.set(value, 0f);
-                    } else if (rawType == Long.class) {
-                        field.set(value, 0L);
-                    } else if (rawType == Short.class) {
-                        field.set(value, 0);
-                    } else if (rawType == Boolean.class) {
-                        field.set(value, false);
-                    } else if (rawType == Double.class) {
-                        field.set(value, 0.0);
-                    }
+                    field.set(value, null);
                 }
             }
 
@@ -168,24 +183,27 @@ public final class ReflectiveTypeAdapterFactory implements TypeAdapterFactory {
         };
     }
 
+    @SuppressWarnings("deprecation")
     private Map<String, BoundField> getBoundFields(Gson context, TypeToken<?> type, Class<?> raw) {
         Map<String, BoundField> result = new LinkedHashMap<String, BoundField>();
         if (raw.isInterface()) {
             return result;
         }
 
+        FieldNamingStrategy fieldNamingStrategy = context.fieldNamingStrategy();
+        Excluder activeExcluder = context.excluder();
         Type declaredType = type.getType();
         while (raw != Object.class) {
             Field[] fields = raw.getDeclaredFields();
             for (Field field : fields) {
-                boolean serialize = excludeField(field, true);
-                boolean deserialize = excludeField(field, false);
+                boolean serialize = excludeField(field, true, activeExcluder);
+                boolean deserialize = excludeField(field, false, activeExcluder);
                 if (!serialize && !deserialize) {
                     continue;
                 }
                 ReflectionHelper.makeAccessible(field);
                 Type fieldType = GsonTypes.resolve(type.getType(), raw, field.getGenericType());
-                List<String> fieldNames = getFieldNames(field);
+                List<String> fieldNames = getFieldNames(field, fieldNamingStrategy);
                 BoundField previous = null;
                 for (int i = 0, size = fieldNames.size(); i < size; ++i) {
                     String name = fieldNames.get(i);
@@ -227,10 +245,13 @@ public final class ReflectiveTypeAdapterFactory implements TypeAdapterFactory {
     public static final class Adapter<T> extends TypeAdapter<T> {
         private final ObjectConstructor<T> constructor;
         private final Map<String, BoundField> boundFields;
+        private final TypeAdapter<T> delegate;
 
-        Adapter(ObjectConstructor<T> constructor, Map<String, BoundField> boundFields) {
+        Adapter(ObjectConstructor<T> constructor, Map<String, BoundField> boundFields,
+                TypeAdapter<T> delegate) {
             this.constructor = constructor;
             this.boundFields = boundFields;
+            this.delegate = delegate;
         }
 
         @Override
@@ -241,93 +262,43 @@ public final class ReflectiveTypeAdapterFactory implements TypeAdapterFactory {
             }
 
             T instance = constructor.construct();
+            try {
+                in.beginObject();
+            } catch (Exception ignored) {
+                in.skipValue();
+                return null;
+            }
 
-            try {
-                try {
-                    in.beginObject();
-                } catch (Exception e) {
-//                      passnext(in);
+            while (in.hasNext()) {
+                if (in.peek() != JsonToken.NAME) {
+                    passnext(in);
+                    continue;
+                }
+                String name = in.nextName();
+                BoundField field = boundFields.get(name);
+                if (field == null || !field.deserialized) {
                     in.skipValue();
-                    e.printStackTrace();
-                    return null;
-                }
-                while (in.hasNext()) {
-                    String name = null;
-                    if (in.peek() == JsonToken.NAME) {//不为 name 跳过
-                        name = in.nextName();
-                    } else {
-                        passnext(in);
-                        continue;
-                    }
-                    BoundField field = boundFields.get(name);
-                    if (field == null || !field.deserialized) {
-                        in.skipValue();
-                    } else {
-                        try {
-                            field.read(in, instance);
-                        } catch (Exception e) {
-                            e.printStackTrace();
-                        }
+                } else {
+                    try {
+                        field.read(in, instance);
+                    } catch (IllegalAccessException e) {
+                        throw new AssertionError(e);
                     }
                 }
-            } catch (Exception e) {
-                e.printStackTrace();
-//              throw new JsonSyntaxException(e);
             }
-            try {
-                in.endObject();
-            } catch (Exception e) {
-//              passnext(in);
-                e.printStackTrace();
-            }
+            in.endObject();
             return instance;
         }
 
         @Override
         public void write(JsonWriter out, T value) throws IOException {
-            if (value == null) {
-                out.nullValue();
-                return;
-            }
-
-            out.beginObject();
-            try {
-                for (BoundField boundField : boundFields.values()) {
-                    if (boundField.writeField(value)) {
-                        out.name(boundField.name);
-                        boundField.write(out, value);
-                    }
-                }
-            } catch (IllegalAccessException e) {
-                throw new AssertionError(e);
-            }
-            out.endObject();
+            delegate.write(out, value);
         }
 
-        /**
-         * 跳过
-         *
-         * @param in
-         */
         public void passnext(JsonReader in) {
             try {
-                if (in.peek() == JsonToken.STRING) {
-                    in.nextString();
-                } else if (in.peek() == JsonToken.BOOLEAN) {
-                    in.nextBoolean();
-                } else if (in.peek() == JsonToken.NUMBER) {
-                    in.nextDouble();
-                } else if (in.peek() == JsonToken.BEGIN_ARRAY) {
-                    in.beginArray();
-                } else if (in.peek() == JsonToken.END_ARRAY) {
-                    in.endArray();
-                } else if (in.peek() == JsonToken.BEGIN_OBJECT) {
-                    in.beginObject();
-                } else if (in.peek() == JsonToken.END_OBJECT) {
-                    in.endObject();
-                }
-            } catch (Exception e) {
-                e.printStackTrace();
+                in.skipValue();
+            } catch (Exception ignored) {
             }
         }
     }

@@ -17,6 +17,8 @@
 package com.fz.gson;
 
 import com.google.gson.Gson;
+import com.google.gson.JsonElement;
+import com.google.gson.JsonParser;
 import com.google.gson.TypeAdapter;
 import com.google.gson.TypeAdapterFactory;
 import com.google.gson.internal.GsonTypes;
@@ -83,25 +85,26 @@ public final class CollectionTypeAdapterFactory implements TypeAdapterFactory {
                 return null;
             }
 
-            Collection<E> collection = null;
-            try {
-                collection = constructor.construct();
-                in.beginArray();
-                while (in.hasNext()) {
-                    E instance = elementTypeAdapter.read(in);
-                    if (instance != null) {
-                        collection.add(instance);
-                    }
-                }
-                in.endArray();
-            } catch (Exception e) {
-                e.printStackTrace();
+            Collection<E> collection = constructor.construct();
+            if (in.peek() != JsonToken.BEGIN_ARRAY) {
+                in.skipValue();
+                return collection;
+            }
+
+            in.beginArray();
+            while (in.hasNext()) {
+                JsonElement jsonElement = JsonParser.parseReader(in);
+                E instance = null;
                 try {
-                    in.skipValue();
-                } catch (Exception ex) {
-                    ex.printStackTrace();
+                    instance = elementTypeAdapter.fromJsonTree(jsonElement);
+                } catch (Exception ignored) {
+                }
+                try {
+                    collection.add(instance);
+                } catch (Exception ignored) {
                 }
             }
+            in.endArray();
             return collection;
         }
 

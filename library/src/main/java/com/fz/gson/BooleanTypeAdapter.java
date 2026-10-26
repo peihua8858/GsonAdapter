@@ -26,14 +26,14 @@ public class BooleanTypeAdapter implements JsonSerializer<Boolean>, JsonDeserial
 
     @Override
     public Boolean deserialize(JsonElement json, Type typeOfT, JsonDeserializationContext context) throws JsonParseException {
-        if (json == null) {
+        if (json == null || json.isJsonNull()) {
             return false;
-        } else {
-            try {//直接解析
-                return "true".equalsIgnoreCase(json.getAsString());
-            } catch (Exception e) {
-                return false;
-            }
+        }
+        try {
+            String value = json.getAsString().trim();
+            return "true".equalsIgnoreCase(value) || "1".equals(value);
+        } catch (Exception ignored) {
+            return false;
         }
     }
 }

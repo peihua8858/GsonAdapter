@@ -35,10 +35,13 @@ class MainActivity : AppCompatActivity() {
                     "\t\"E\":null,\n" +
                     "\t\"F\":null,\n" +
                     "\t\"G\":null,\n" +
-                    "\t\"H\":null\n" +
+                    "\t\"H\":null,\n" +
+                    "\t\"cc\":{'a':'1','b':'2'}\n" +
                     "}"
-            val response: Response = GsonFactory.create().fromJson(json, type)
+            val response: Response = GsonFactory.createGson().fromJson(json, type)
             Log.d("sss", "response>>>$response")
+            Log.d("sss", "response2>>>${GsonFactory.createGson().toJson(response)}")
+
         } catch (e: Exception) {
             e.printStackTrace()
         }
@@ -54,7 +57,8 @@ class MainActivity : AppCompatActivity() {
         val F:Long,
         val G:Short,
         val H:Boolean,
-        val status:Int
+        val status:Int,
+        val cc:List<String>?
     )
 
     data class Content(

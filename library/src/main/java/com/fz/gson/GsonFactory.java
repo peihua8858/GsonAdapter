@@ -4,21 +4,14 @@ import com.google.gson.FieldNamingPolicy;
 import com.google.gson.FieldNamingStrategy;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
-import com.google.gson.InstanceCreator;
-import com.google.gson.JsonDeserializer;
-import com.google.gson.JsonSerializer;
-import com.google.gson.TypeAdapter;
+import com.google.gson.Strictness;
 import com.google.gson.TypeAdapterFactory;
 import com.google.gson.internal.ConstructorConstructor;
 import com.google.gson.internal.Excluder;
 import com.google.gson.internal.bind.MapTypeAdapterFactory;
-import com.google.gson.internal.bind.TreeTypeAdapter;
-import com.google.gson.reflect.TypeToken;
 
 import java.lang.reflect.Type;
 import java.util.Collections;
-import java.util.Iterator;
-import java.util.Map;
 
 /**
  * 为了gson 能够正常解析出服务器返回数据 做容错处理。
@@ -82,12 +75,16 @@ public class GsonFactory {
             mBuilder.registerTypeAdapter(boolean.class, BOOLEAN);
             mBuilder.registerTypeAdapter(long.class, LONG);
             mBuilder.registerTypeAdapter(String.class, STRING);
+            return this;
+        }
+
+        public Factory serializeNulls() {
             mBuilder.serializeNulls();
             return this;
         }
 
         public Factory setLenient() {
-            mBuilder.setLenient();
+            mBuilder.setStrictness(Strictness.LENIENT);
             return this;
         }
 
@@ -133,6 +130,9 @@ public class GsonFactory {
         return new Factory(isAllAdapter);
     }
     public static Gson createGson() {
-        return createFactory().setLenient().build();
+        return createFactory()
+                .setLenient()
+                .serializeNulls()
+                .build();
     }
 }
